@@ -18,13 +18,14 @@ The Wiki API is used for various purposes, such as:
 
 ### Query Parameter Exploration
 Below is an explanation of the key query parameters for the API:
-- **`action=query`**: Fetches data from and about MediaWiki.
-- **`list=search`**: The "list" submodule of `action=query`. It performs a full-text search.
-- **`srsearch=Software Testing`**: Searches for page titles or content matching the specified value. This parameter is required for `list=search`.
-- **`sroffset=10`**: Used to continue fetching results when more are available.
-- **`continue=-||`**: Continuation token for fetching additional results (default value used).
-- **`format=json`**: Outputs data in JSON format.
-- **`formatversion=2`**: Outputs data in modern formatting.
+
+- **`action=query`**: Fetch data from and about MediaWiki.  
+  - **`list=search`**: `"list"` is the submodule of `action=query`. This will perform a full-text search.  
+    - **`srsearch=Software Testing`**: Search for page titles or content matching this value. This parameter is required.  
+    - **`sroffset=10`**: When more results are available, use this parameter to continue fetching results.  
+- **`continue=-||`**: Continuation token for fetching additional results (default value used).  
+- **`format=json`**: Output data in JSON format.  
+  - **`formatversion=2`**: Output formatting in modern format. This is a parameter of the `format` module.
 
 ---
 
@@ -69,8 +70,10 @@ All query parameters are correct and valid.
 - The test scripts are designed to validate both the **Happy Path** and **Unhappy Path** scenarios.  
 - All test cases are implemented using Postman or an equivalent API testing tool to ensure proper handling of query parameters and responses.
 - The API responses are verified for proper error handling, including validating error codes and error messages.
+- The repository includes the following files:
+  - **`Wikipedia API Exercise.postman_collection.json`**: Contains the test cases in separate requests.
+  - **`Data-driven Wiki API Exercise.postman_collection.json`**: Contains a single request that handles all the test cases.  
+    - To run this collection, use the **"Run Collection"** feature in Postman and select the **`wikiApiData.json`** file as the Data File.
 
 ---
 
-## License
-This project is licensed under the MIT License.
