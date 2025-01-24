@@ -62,8 +62,9 @@ Below is an explanation of the key query parameters for the API:
 
 ### **Happy Path**
 **Pre-condition**: `format` must be `"json"`.  
-All query parameters are correct and valid.
-
+- All query parameters are correct and valid.
+- `sroffset` is greater than remaining number of searched items.
+    For example: If search limit = 10, max search items = 9999. Then if sroffset > 9990, number of items remains should be = max seach items - sroffset.  
 ---
 
 ## Notes
