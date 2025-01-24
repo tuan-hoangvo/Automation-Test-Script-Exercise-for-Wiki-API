@@ -1,1 +1,76 @@
-# Automation-Test-Script-Exercise-for-Wiki-API
+# Automation Test Script Exercise for Wiki API
+
+## Overview
+This repository contains scripts for automating test cases for the following Wiki API:  
+[https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&continue=-%7C%7C&formatversion=2&srsearch=Software%20Testing&sroffset=10](https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&continue=-%7C%7C&formatversion=2&srsearch=Software%20Testing&sroffset=10)
+
+### API URL
+The API endpoint: **[https://en.wikipedia.org/w/api.php](https://en.wikipedia.org/w/api.php)**  
+This is the English Wikipedia API. It follows the pattern:  
+`https://www.example.org/w/api.php`
+
+### Usage
+The Wiki API is used for various purposes, such as:
+- **Authentication**  
+- **Page operations**  
+- **Search functionality**  
+- **Providing meta-information** about the wiki and the logged-in user  
+
+### Query Parameter Exploration
+Below is an explanation of the key query parameters for the API:
+- **`action=query`**: Fetches data from and about MediaWiki.
+- **`list=search`**: The "list" submodule of `action=query`. It performs a full-text search.
+- **`srsearch=Software Testing`**: Searches for page titles or content matching the specified value. This parameter is required for `list=search`.
+- **`sroffset=10`**: Used to continue fetching results when more are available.
+- **`continue=-||`**: Continuation token for fetching additional results (default value used).
+- **`format=json`**: Outputs data in JSON format.
+- **`formatversion=2`**: Outputs data in modern formatting.
+
+---
+
+## Test Scenarios
+
+### **Unhappy Path**
+#### 1. Test Cases for `action`
+**Pre-condition**: None  
+- **1.1**: `action` value is invalid.  
+- **1.2**: `action` value is empty.  
+
+> **Note**: If `action` is missing, the API returns the HTML of the API documentation page. No test case was written for this scenario.
+
+#### 2. Test Cases for `list`
+**Pre-condition**: `action` must be `"query"`, `format` must be `"json"`.  
+- **2.1**: `list` value is invalid, with other parameters either present or missing.  
+- **2.2**: `list` is empty or missing, with other parameters either present or missing.  
+- **2.3**: `list` is `"search"`, but the required parameter `srsearch` is missing.  
+
+#### 3. Test Cases for `formatversion`
+**Pre-condition**: `action` must be `"query"`, `format` must be `"json"`.  
+- **3.1**: `formatversion` is empty, while other query parameters are present.  
+- **3.2**: `formatversion` is invalid (not 1 or 2), while other query parameters are present.  
+- **3.3**: `formatversion` is invalid, with other query parameters present, but `list` is missing, empty, or invalid.  
+- **3.4**: `formatversion` is invalid, with other query parameters present, but `srsearch` is missing.  
+
+#### 4. Test Cases for `sroffset`
+**Pre-condition**: `action` must be `"query"`, `format` must be `"json"`, `list` must be `"search"`, and `srsearch` must be present.  
+- **4.1**: `sroffset` is a string.  
+- **4.2**: `sroffset` is larger than `9999`.  
+- **4.3**: `sroffset` is lower than `0`.  
+
+---
+
+### **Happy Path**
+**Pre-condition**: `format` must be `"json"`.  
+All query parameters are correct and valid.
+
+---
+
+## Notes
+- The test scripts are designed to validate both the **Happy Path** and **Unhappy Path** scenarios.  
+- All test cases are implemented using Postman or an equivalent API testing tool to ensure proper handling of query parameters and responses.
+- The API responses are verified for proper error handling, including validating error codes and error messages.
+
+---
+
+## License
+This project is licensed under the MIT License.
