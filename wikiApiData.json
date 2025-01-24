@@ -105,7 +105,7 @@
         "format": "json",
         "listValue": "se@rch",
         "continue": "-||",
-        "formatversionValue": "-20",
+        "formatversionValue": "2",
         "srsearchValue": "Software Testing",
         "sroffsetValue": -1
     },
@@ -115,7 +115,7 @@
         "format": "json",
         "listValue": "se@rch",
         "continue": "-||",
-        "formatversionValue": "-20",
+        "formatversionValue": "2",
         "srsearchValue": "Software Testing",
         "sroffsetValue": 10000
     },
@@ -128,5 +128,15 @@
         "formatversionValue": "2",
         "srsearchValue": "Software Testing",
         "sroffsetValue": 10
+    }, 
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "Software Testing",
+        "sroffsetValue": 9995
     }
 ]
