@@ -1,0 +1,380 @@
+{
+	"info": {
+		"_postman_id": "aa6e7541-a5ee-4a66-a09c-987529471c0d",
+		"name": "Data-driven Wiki API Exercise",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40990651"
+	},
+	"item": [
+		{
+			"name": "Data-driven automation test script",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response, jsonFlag = false; \r",
+							"const actionValue = pm.variables.get('actionValue');\r",
+							"const listValue = pm.variables.get('listValue');\r",
+							"\r",
+							"const availablActionValue = [\"query\"];\r",
+							"const availablListValue = [\"search\"];\r",
+							"const availableFormatVersionValue = [\"1\", \"2\"];\r",
+							"\r",
+							"const queryParams = pm.request.url.query;\r",
+							"const formatQueryValue = pm.request.url.query.find(param => param.key === \"format\")?.value;\r",
+							"console.log(formatQueryValue);\r",
+							"\r",
+							"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+							"console.log(\"This is \" + subParameterList);\r",
+							"pm.test(\"Response status is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"})\r",
+							"\r",
+							"switch(formatQueryValue){\r",
+							"    case \"json\":\r",
+							"        pm.test(\"Response is in json\", ()=>{\r",
+							"        pm.response.to.have.header('content-type');\r",
+							"        const headerContentType = pm.response.headers.get('content-type');\r",
+							"        pm.expect(headerContentType).to.include('json');\r",
+							"        response = pm.response.json();\r",
+							"        jsonFlag = true;\r",
+							"    })\r",
+							"    break;\r",
+							"    case undefined:\r",
+							"        pm.test(\"Response is in JSON format (pretty-print in HTML).\", () => {\r",
+							"        pm.response.to.have.header('content-type');\r",
+							"        const headerContentType = pm.response.headers.get('content-type');\r",
+							"        pm.expect(headerContentType).to.include('html');\r",
+							"        response = pm.response.text();\r",
+							"        })\r",
+							"    break;\r",
+							"}\r",
+							"\r",
+							"console.log(actionValue);\r",
+							"\r",
+							"if (!availablActionValue.includes(actionValue)){\r",
+							"    pm.test(\"Response return error\", () => {\r",
+							"        if (jsonFlag){\r",
+							"            pm.expect(response).to.be.an('Object');\r",
+							"            pm.expect(response).to.haveOwnProperty('error');\r",
+							"        } else {\r",
+							"            pm.expect(response).to.include(\"error\");\r",
+							"        }\r",
+							"    })\r",
+							"\r",
+							"    pm.test(\"Response return error on action\", () => {\r",
+							"        if (jsonFlag){\r",
+							"        pm.expect(response.error).to.be.an('Object');\r",
+							"        pm.expect(response.error).to.haveOwnProperty('code').and.to.eql(\"badvalue\");\r",
+							"        console.log(\"action is: \" + actionValue);\r",
+							"        pm.expect(response.error).to.haveOwnProperty('info').and.to.include(`Unrecognized value for parameter \\\"action\\\": ${actionValue}.`);\r",
+							"\r",
+							"\r",
+							"        } else {\r",
+							"            pm.expect(response).to.include(\"badvalue\");\r",
+							"            pm.expect(response).to.include(`Unrecognized value for parameter`);\r",
+							"        }\r",
+							"\r",
+							"    }) \r",
+							"}\r",
+							"\r",
+							"// 2.2 \r",
+							"if (!availablListValue.includes(listValue)){\r",
+							"    pm.test(\"Response return warnings on query\", () => {\r",
+							"        pm.expect(response).to.be.an('Object');\r",
+							"\r",
+							"        const formatversionValue = pm.request.url.query.find(param => param.key === \"formatversion\")?.value;\r",
+							"        console.log(formatversionValue);\r",
+							"\r",
+							"        if (listValue.length > 0){\r",
+							"            pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('query').to.haveOwnProperty(formatversionValue === \"2\" ? \"warnings\" : \"*\");\r",
+							"\r",
+							"            formatversionValue === \"2\" ? \r",
+							"            pm.expect(response.warnings.query.warnings).to.include(`Unrecognized value for parameter \\\"list\\\": ${listValue}`) : \r",
+							"            pm.expect(response.warnings.query[\"*\"]).to.include(`Unrecognized value for parameter \\\"list\\\": ${listValue}`); \r",
+							"        } \r",
+							"    })\r",
+							"\r",
+							"    if (Object.keys(subParameterList).length > 0){\r",
+							"        pm.test(\"Response return warnings on main\", () => {\r",
+							"            const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+							"            \r",
+							"            pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('main').to.haveOwnProperty(formatversionValue === \"2\" ? \"warnings\" : \"*\");\r",
+							"\r",
+							"            if (formatversionValue === \"2\"){\r",
+							"                console.log(\"errorString\");\r",
+							"                pm.expect(response.warnings.main.warnings).to.include(\"Unrecognized parameter\");\r",
+							"                subParameterList.map(subParam => pm.expect(response.warnings.main.warnings).to.satisfy(warnings => warnings.includes(subParam)));\r",
+							"            } else {\r",
+							"                pm.expect(response.warnings.main[\"*\"]).to.include(\"Unrecognized parameter\");\r",
+							"                subParameterList.map(subParam => pm.expect(response.warnings.main[\"*\"]).to.satisfy(warnings => warnings.includes(subParam)));         \r",
+							"            }      \r",
+							"        })\r",
+							"    } \r",
+							"}\r",
+							"\r",
+							"console.log(subParameterList.includes(\"srsearch\"));\r",
+							"\r",
+							"// 2.3 \r",
+							"if (availablActionValue.includes(actionValue) && listValue === \"search\" && !subParameterList.includes(\"srsearch\")) {\r",
+							"    pm.test(\"Response return error on required parameter \\\"srsearch\\\"\", () => {\r",
+							"        pm.expect(response).to.be.an('Object');\r",
+							"\r",
+							"        const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+							"        console.log(formatversionValue);\r",
+							"\r",
+							"        pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.include(\"missingparam\");\r",
+							"        pm.expect(response.error.info).to.include(`The \\\"srsearch\\\" parameter must be set.`);\r",
+							"    })\r",
+							"}\r",
+							"\r",
+							"const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+							"console.log(\"Format version is: \" + formatversionValue);\r",
+							"console.log(!availableFormatVersionValue.includes(formatversionValue));\r",
+							"\r",
+							"if (!availableFormatVersionValue.includes(formatversionValue)) { \r",
+							"    pm.test(\"Response return warning and error on formatversion\", () => {\r",
+							"        pm.expect(response).to.be.an('Object');\r",
+							"\r",
+							"        const formatversionValue = pm.collectionVariables.get('formatversionValue');\r",
+							"        pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('json').to.haveOwnProperty('*').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+							"\r",
+							"        if (subParameterList.includes(\"srsearch\")){\r",
+							"            pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+							"        }\r",
+							"    })\r",
+							"}\r",
+							"\r",
+							"\r",
+							"const sroffsetValue = queryParams.find(param => param.key === \"sroffset\")?.value;\r",
+							"const sroffsetValueAsNumber = Number(sroffsetValue);\r",
+							"let  responseSuccessFlag = false;\r",
+							"console.log(sroffsetValueAsNumber);\r",
+							"if (availablActionValue.includes(actionValue) && availablListValue.includes(listValue) && availableFormatVersionValue.includes(formatversionValue) && subParameterList.includes(\"srsearch\")){\r",
+							"    let errorString, errorCode, negativeOffsetFlag = false;\r",
+							"    \r",
+							"    switch(true){\r",
+							"        case (isNaN(sroffsetValueAsNumber)):\r",
+							"            errorString = `Invalid value \\\"${sroffsetValue}\\\" for integer parameter \\\"sroffset\\\".`;\r",
+							"            errorCode = 'badinteger'\r",
+							"            \r",
+							"            break;\r",
+							"        case sroffsetValueAsNumber > 9999:\r",
+							"            errorString = `Could not retrieve results. Up to 10000 search results are supported, but results starting at ${sroffsetValue} were requested.`;\r",
+							"            errorCode = 'cirrussearch-offset-too-large';\r",
+							"            break;\r",
+							"        case sroffsetValueAsNumber < 0:\r",
+							"            negativeOffsetFlag = true;\r",
+							"\r",
+							"            break;\r",
+							"        default:\r",
+							"            responseSuccessFlag = true;        \r",
+							"            console.log('Hello')\r",
+							"    } \r",
+							"    if (!responseSuccessFlag){\r",
+							"        pm.test(\"Response return error on sroffset\", () => {\r",
+							"            pm.expect(response).to.be.an('Object');\r",
+							"            if (negativeOffsetFlag){\r",
+							"                pm.expect(response).to.haveOwnProperty('warnings')\r",
+							"                .to.haveOwnProperty('search')\r",
+							"                .to.haveOwnProperty('warnings')\r",
+							"                .to.include(`The value \\\"${sroffsetValue}\\\" for parameter \\\"sroffset\\\" must be no less than 0.`);\r",
+							"            } else {\r",
+							"                pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(errorString);\r",
+							"\r",
+							"                pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.eql(errorCode);   \r",
+							"            }\r",
+							"        })    \r",
+							"    }\r",
+							"}\r",
+							"\r",
+							"if (responseSuccessFlag){\r",
+							"    pm.test(\"Batch completed\", () => {\r",
+							"        const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+							"        pm.expect(response).to.haveOwnProperty('batchcomplete');\r",
+							"        let batchcompleteValue;\r",
+							"        formatversionValue === \"2\" ? batchcompleteValue = true : batchcompleteValue = \"\";\r",
+							"\r",
+							"        pm.expect(response.batchcomplete).to.eql(batchcompleteValue);\r",
+							"    })\r",
+							"\r",
+							"    pm.test(\"Response return correct offsec\", () => {\r",
+							"    \r",
+							"        pm.expect(response).to.haveOwnProperty('continue').to.haveOwnProperty('sroffset').to.be.a('number').to.eql((sroffsetValueAsNumber + 10));\r",
+							"    })\r",
+							"\r",
+							"    pm.test(\"Response return 10 searched items\", () => {\r",
+							"        pm.expect(response).to.haveOwnProperty('query').to.haveOwnProperty('search'); \r",
+							"        pm.expect(response.query.search).to.be.an(\"array\").that.is.not.empty;\r",
+							"\r",
+							"        pm.expect(response.query.search.length).to.eql(10);\r",
+							"        \r",
+							"    })  \r",
+							"\r",
+							"    pm.test(\"Searched items have all required fields\", () => {\r",
+							"        \r",
+							"        response.query.search.map(item => {\r",
+							"            pm.expect(item).to.haveOwnProperty('ns');\r",
+							"            \r",
+							"            pm.expect(item).to.haveOwnProperty('title');\r",
+							"            pm.expect(item.title).to.be.a('String');\r",
+							"\r",
+							"            pm.expect(item).to.haveOwnProperty('pageid');\r",
+							"            pm.expect(item.pageid).to.be.a('number');\r",
+							"            pm.expect(item.pageid).to.be.greaterThan(0);\r",
+							"\r",
+							"            pm.expect(item).to.haveOwnProperty('size');\r",
+							"            pm.expect(item.size).to.be.a('number');\r",
+							"            pm.expect(item.size).to.be.greaterThan(0);\r",
+							"\r",
+							"            pm.expect(item).to.haveOwnProperty('wordcount');\r",
+							"            pm.expect(item.wordcount).to.be.a('number');\r",
+							"            pm.expect(item.wordcount).to.be.greaterThan(0);\r",
+							"\r",
+							"            pm.expect(item).to.haveOwnProperty('snippet');\r",
+							"            pm.expect(item.snippet).to.be.a('String');\r",
+							"\r",
+							"            pm.expect(item).to.haveOwnProperty('timestamp');\r",
+							"            const timestamp = new Date(item.timestamp);\r",
+							"            pm.expect(timestamp).to.be.a(\"date\");\r",
+							"        })\r",
+							"        \r",
+							"    })\r",
+							"}\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							" \r",
+							"\r",
+							"\r",
+							" "
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseWikiUrl}}?action={{actionValue}}&format={{format}}&list={{listValue}}&continue={{continue}}&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset={{sroffsetValue}}",
+					"host": [
+						"{{baseWikiUrl}}"
+					],
+					"query": [
+						{
+							"key": "action",
+							"value": "{{actionValue}}"
+						},
+						{
+							"key": "format",
+							"value": "{{format}}"
+						},
+						{
+							"key": "list",
+							"value": "{{listValue}}"
+						},
+						{
+							"key": "continue",
+							"value": "{{continue}}"
+						},
+						{
+							"key": "formatversion",
+							"value": "{{formatversionValue}}"
+						},
+						{
+							"key": "srsearch",
+							"value": "{{srsearchValue}}"
+						},
+						{
+							"key": "sroffset",
+							"value": "{{sroffsetValue}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "actionValue",
+			"value": "query"
+		},
+		{
+			"key": "baseWikiUrl",
+			"value": "https://en.wikipedia.org/w/api.php",
+			"type": "default"
+		},
+		{
+			"key": "listValue",
+			"value": "search",
+			"type": "default"
+		},
+		{
+			"key": "formatversionValue",
+			"value": "2",
+			"type": "default"
+		},
+		{
+			"key": "continue",
+			"value": "-||",
+			"type": "default"
+		},
+		{
+			"key": "format",
+			"value": "json",
+			"type": "default"
+		},
+		{
+			"key": "srsearchValue",
+			"value": "Software Testing",
+			"type": "default"
+		},
+		{
+			"key": "sroffsetValue",
+			"value": "10",
+			"type": "default"
+		}
+	]
+}

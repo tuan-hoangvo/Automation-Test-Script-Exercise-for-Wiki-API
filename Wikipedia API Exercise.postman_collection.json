@@ -1,0 +1,1589 @@
+{
+	"info": {
+		"_postman_id": "25c7b524-e220-4e9d-b210-69a346b18743",
+		"name": "Wikipedia API Exercise",
+		"description": "API URL: [https://en.wikipedia.org/w/api.php](https://en.wikipedia.org/w/api.php)\n\nThis is the English Wikipedia API and it follow the pattern of \"[https://www.example.org/w/api.php\"](https://www.example.org/w/api.php)\n\n# Usage:\n\nThis endpoint is used for authentication, page operations, and search. It also provide meta information about the wiki and the logged-in user.\n\nQuery parameter exploration:\n\naction=query : Fetch data from and about MediaWiki.\n\n- list=search : \"list\" is the submodule of action=query module. This will perform a full text search.\n    \n    - srsearch=Software Testing : Search for page titles or content matching this value. This parameter is required.\n        \n    - sroffset=10 : When more results are available, use this to continue.\n        \n- continue=-|| :\n    \n\nformat=json : Output data in JSON format\n\n- formatversion=2 : Output formatting = Modern format. This is a parameter of format module\n    \n\n# Unhappy Path\n\n## 1\\. Test cases for \"action\"\n\nPre-condition: none\n\n- 1.1: action value is invalid\n    \n- 1.2: action valie is empty\n    \n\nif action is missinig, then the response return the html of API documentation page. Therefore, no test case was written for this scenario.\n\n## 2\\. Test cases for \"list\"\n\nPre-condition: action must be \"query\", format must be \"json\"\n\n- 2.1: list is invalid, other parameters are either present or not present\n    \n- 2.2: list is empty / missing, other parameters are either present or not present\n    \n- 2.3: list is \"search\", but missing require parameter \"srsearch\"\n    \n\n## 3\\. Test cases for \"formatversion\"\n\nPre-condition: action must be \"query\", format must be \"json\"\n\n- 3.1: formatversion is empty, other query params are present\n    \n- 3.2: formatversion is invalid (not 1 or 2), other query params are present\n    \n- 3.3: formatversion is invalid, other query params are present, but \"list\" is missing / empty / invalid\n    \n- 3.4: formatversion is invalid, other query params are present, but \"srsearch\" is missing\n    \n\n## 4\\. Test cases for \"sroffset\"\n\nPre-condition: action must be \"query\", format must be \"json\", list must be \"search\", srsearch must present.\n\n- 4.1: sroffset is string\n    \n- 4.2: sroffset is larger than 9999\n    \n- 4.3: sroffset is lower than 0\n    \n\n# Happy Path\n\nPre-condition: format must be \"json\"\n\n- All query parameters are correct",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40990651"
+	},
+	"item": [
+		{
+			"name": "Input Validation / Error handling Tests",
+			"item": [
+				{
+					"name": "1.1: action value is invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response, jsonFlag = false; \r",
+									"const actionValue = pm.collectionVariables.get('actionValue');\r",
+									"const queryParams = pm.request.url.getQueryString();\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const formatQueryValue = pm.request.url.query.find(param => param.key === \"format\")?.value;\r",
+									"console.log(formatQueryValue);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"switch(formatQueryValue){\r",
+									"    case \"json\":\r",
+									"        pm.test(\"Response is in json\", ()=>{\r",
+									"        pm.response.to.have.header('content-type');\r",
+									"        const headerContentType = pm.response.headers.get('content-type');\r",
+									"        pm.expect(headerContentType).to.include('json');\r",
+									"        response = pm.response.json();\r",
+									"        jsonFlag = true;\r",
+									"    })\r",
+									"    break;\r",
+									"    case undefined:\r",
+									"        pm.test(\"Response is in JSON format (pretty-print in HTML).\", () => {\r",
+									"        pm.response.to.have.header('content-type');\r",
+									"        const headerContentType = pm.response.headers.get('content-type');\r",
+									"        pm.expect(headerContentType).to.include('html');\r",
+									"\r",
+									"        response = pm.response.text();\r",
+									"        })\r",
+									"    break;\r",
+									"}\r",
+									"\r",
+									"console.log(response);\r",
+									"pm.test(\"Response return error\", () => {\r",
+									"    if (jsonFlag){\r",
+									"        pm.expect(response).to.be.an('Object');\r",
+									"        pm.expect(response).to.haveOwnProperty('error');\r",
+									"    } else {\r",
+									"        pm.expect(response).to.include(\"error\");\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return error on action\", () => {\r",
+									"    if (jsonFlag){\r",
+									"    pm.expect(response.error).to.be.an('Object');\r",
+									"    pm.expect(response.error).to.haveOwnProperty('code').and.to.eql(\"badvalue\");\r",
+									"    pm.expect(response.error).to.haveOwnProperty('info').and.to.eql(`Unrecognized value for parameter \\\"action\\\": ${actionValue}.`);\r",
+									"    } else {\r",
+									"        pm.expect(response).to.include(\"badvalue\");\r",
+									"        pm.expect(response).to.include(`Unrecognized value for parameter`);\r",
+									"    }\r",
+									"\r",
+									"})  \r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"queri\");\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion=2&srsearch=Software%20Testing&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "2"
+								},
+								{
+									"key": "srsearch",
+									"value": "Software%20Testing"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2: action value is empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response, jsonFlag = false; \r",
+									"const actionValue = pm.collectionVariables.get('actionValue');\r",
+									"const queryParams = pm.request.url.getQueryString();\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const formatQueryValue = pm.request.url.query.find(param => param.key === \"format\")?.value;\r",
+									"console.log(formatQueryValue);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"switch(formatQueryValue){\r",
+									"    case \"json\":\r",
+									"        pm.test(\"Response is in json\", ()=>{\r",
+									"        pm.response.to.have.header('content-type');\r",
+									"        const headerContentType = pm.response.headers.get('content-type');\r",
+									"        pm.expect(headerContentType).to.include('json');\r",
+									"        response = pm.response.json();\r",
+									"        jsonFlag = true;\r",
+									"    })\r",
+									"    break;\r",
+									"    case undefined:\r",
+									"        pm.test(\"Response is in JSON format (pretty-print in HTML).\", () => {\r",
+									"        pm.response.to.have.header('content-type');\r",
+									"        const headerContentType = pm.response.headers.get('content-type');\r",
+									"        pm.expect(headerContentType).to.include('html');\r",
+									"\r",
+									"        response = pm.response.text();\r",
+									"        })\r",
+									"    break;\r",
+									"}\r",
+									"\r",
+									"console.log(response);\r",
+									"pm.test(\"Response return error\", () => {\r",
+									"    if (jsonFlag){\r",
+									"        pm.expect(response).to.be.an('Object');\r",
+									"        pm.expect(response).to.haveOwnProperty('error');\r",
+									"    } else {\r",
+									"        pm.expect(response).to.include(\"error\");\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Action value must be 'query' \", () => {\r",
+									"    if (jsonFlag){\r",
+									"    pm.expect(response.error).to.be.an('Object');\r",
+									"    pm.expect(response.error).to.haveOwnProperty('code').and.to.eql(\"badvalue\");\r",
+									"    pm.expect(response.error).to.haveOwnProperty('info').and.to.eql(`Unrecognized value for parameter \\\"action\\\": ${actionValue}.`);\r",
+									"    }\r",
+									"\r",
+									"})  \r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"\");\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&list=&continue=-||&formatversion=2&srsearch=Software%20Testing&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json",
+									"disabled": true
+								},
+								{
+									"key": "list",
+									"value": ""
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "2"
+								},
+								{
+									"key": "srsearch",
+									"value": "Software%20Testing"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.1: list is invalid, other parameters are present",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response return warnings on query\", () => {\r",
+									"\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"    console.log(formatversionValue);\r",
+									"\r",
+									"    pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('query').to.haveOwnProperty(formatversionValue === \"2\" ? \"warnings\" : \"*\");\r",
+									"\r",
+									"    formatversionValue === \"2\" ? \r",
+									"    pm.expect(response.warnings.query.warnings).to.include(`Unrecognized value for parameter \\\"list\\\": ${listValue}`) : \r",
+									"    pm.expect(response.warnings.query[\"*\"]).to.include(`Unrecognized value for parameter \\\"list\\\": ${listValue}`); \r",
+									"})\r",
+									"\r",
+									"\r",
+									"if (Object.keys(subParameterList).length > 0){\r",
+									"    pm.test(\"Main parameter(s) is unrecognized\", () => {\r",
+									"        const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"        \r",
+									"        pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('main').to.haveOwnProperty(formatversionValue === \"2\" ? \"warnings\" : \"*\");\r",
+									"\r",
+									"        if (formatversionValue === \"2\"){\r",
+									"            console.log(\"errorString\");\r",
+									"            pm.expect(response.warnings.main.warnings).to.include(\"Unrecognized parameter\");\r",
+									"            subParameterList.map(subParam => pm.expect(response.warnings.main.warnings).to.satisfy(warnings => warnings.includes(subParam)));\r",
+									"        } else {\r",
+									"            pm.expect(response.warnings.main[\"*\"]).to.include(\"Unrecognized parameter\");\r",
+									"            subParameterList.map(subParam => pm.expect(response.warnings.main[\"*\"]).to.satisfy(warnings => warnings.includes(subParam)));         \r",
+									"        }      \r",
+									"    })\r",
+									"} \r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"se@rch\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion=2&srsearch={{srsearchValue}}&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "2"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2: list is empty / missing, other parameters are either present or not present",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"\r",
+									"if (Object.keys(subParameterList).length > 0){\r",
+									"    pm.test(\"Main parameter(s) is unrecognized\", () => {\r",
+									"        const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"        \r",
+									"        pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('main').to.haveOwnProperty(formatversionValue === \"2\" ? \"warnings\" : \"*\");\r",
+									"\r",
+									"        if (formatversionValue === \"2\"){\r",
+									"            console.log(\"errorString\");\r",
+									"            pm.expect(response.warnings.main.warnings).to.include(\"Unrecognized parameter\");\r",
+									"            subParameterList.map(subParam => pm.expect(response.warnings.main.warnings).to.satisfy(warnings => warnings.includes(subParam)));\r",
+									"        } else {\r",
+									"            pm.expect(response.warnings.main[\"*\"]).to.include(\"Unrecognized parameter\");\r",
+									"            subParameterList.map(subParam => pm.expect(response.warnings.main[\"*\"]).to.satisfy(warnings => warnings.includes(subParam)));         \r",
+									"        }      \r",
+									"    })\r",
+									"} \r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion=2",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "2"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}",
+									"disabled": true
+								},
+								{
+									"key": "sroffset",
+									"value": "10",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3: list is \"search\", but missing require parameter \"srsearch\"",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return error on required parameter srsearch\", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"    console.log(formatversionValue);\r",
+									"\r",
+									"    pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.include(\"missingparam\");\r",
+									"    pm.expect(response.error.info).to.include(`The \\\"srsearch\\\" parameter must be set.`);\r",
+									"})\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion=2&srsearch={{srsearchValue}}&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "2"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.1: formatversion is empty, other query params are present",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"\r",
+									"// if (!subParameterList.includes(\"srsearch\")){\r",
+									"//     pm.test(\"Response return error on Missing required parameter srsearch\", () => {\r",
+									"//         pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"//         const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"//         console.log(formatversionValue);\r",
+									"\r",
+									"//         pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.include(\"missingparam\");\r",
+									"//         pm.expect(response.error.info).to.include(`The \\\"srsearch\\\" parameter must be set.`);\r",
+									"//     })\r",
+									"// }\r",
+									"\r",
+									"pm.test(\"Response return warning and error \", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const formatversionValue = pm.collectionVariables.get('formatversionValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('json').to.haveOwnProperty('*').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"\r",
+									"    if (subParameterList.includes(\"srsearch\")){\r",
+									"        pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2: formatversion is invalid (not 1 or 2), other query params are present",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"\r",
+									"// if (!subParameterList.includes(\"srsearch\")){\r",
+									"//     pm.test(\"Response return error on Missing required parameter srsearch\", () => {\r",
+									"//         pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"//         const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"//         console.log(formatversionValue);\r",
+									"\r",
+									"//         pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.include(\"missingparam\");\r",
+									"//         pm.expect(response.error.info).to.include(`The \\\"srsearch\\\" parameter must be set.`);\r",
+									"//     })\r",
+									"// }\r",
+									"\r",
+									"pm.test(\"Response return warning and error \", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const formatversionValue = pm.collectionVariables.get('formatversionValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('json').to.haveOwnProperty('*').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"\r",
+									"    if (subParameterList.includes(\"srsearch\")){\r",
+									"        pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"0\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.3: formatversion is invalid, other query params are present, but \"list\" is missing / empty / invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"\r",
+									"// if (!subParameterList.includes(\"srsearch\")){\r",
+									"//     pm.test(\"Response return error on Missing required parameter srsearch\", () => {\r",
+									"//         pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"//         const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"//         console.log(formatversionValue);\r",
+									"\r",
+									"//         pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.include(\"missingparam\");\r",
+									"//         pm.expect(response.error.info).to.include(`The \\\"srsearch\\\" parameter must be set.`);\r",
+									"//     })\r",
+									"// }\r",
+									"\r",
+									"pm.test(\"Response return warning and error \", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const formatversionValue = pm.collectionVariables.get('formatversionValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('json').to.haveOwnProperty('*').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"\r",
+									"    if (subParameterList.includes(\"srsearch\")){\r",
+									"        pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"se@rch\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.4: formatversion is invalid, other query params are present, but \"srsearch\" is missing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"\r",
+									"if (!subParameterList.includes(\"srsearch\")){\r",
+									"    pm.test(\"Response return error on Missing required parameter srsearch\", () => {\r",
+									"        pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"        const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"        console.log(formatversionValue);\r",
+									"\r",
+									"        pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.include(\"missingparam\");\r",
+									"        pm.expect(response.error.info).to.include(`The \\\"srsearch\\\" parameter must be set.`);\r",
+									"    })\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Response return warning and error \", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const formatversionValue = pm.collectionVariables.get('formatversionValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('json').to.haveOwnProperty('*').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"\r",
+									"    if (subParameterList.includes(\"srsearch\")){\r",
+									"        pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Unrecognized value for parameter \\\"formatversion\\\": ${formatversionValue}`);\r",
+									"    }\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&sroffset=10",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}",
+									"disabled": true
+								},
+								{
+									"key": "sroffset",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.1: sroffset is string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return error on sroffset\", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const sroffsetValue = pm.collectionVariables.get('sroffsetValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Invalid value \\\"${sroffsetValue}\\\" for integer parameter \\\"sroffset\\\".`);\r",
+									"\r",
+									"    pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.eql('badinteger');\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"2\");\r",
+									"pm.collectionVariables.set('sroffsetValue', \"A String\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset={{sroffsetValue}}",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "{{sroffsetValue}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.2: sroffset is larger than 9999",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return error on sroffset\", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const sroffsetValue = pm.collectionVariables.get('sroffsetValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('info').to.include(`Could not retrieve results. Up to 10000 search results are supported, but results starting at ${sroffsetValue} were requested.`);\r",
+									"\r",
+									"    pm.expect(response).to.haveOwnProperty('error').to.haveOwnProperty('code').to.eql('cirrussearch-offset-too-large');\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"2\");\r",
+									"pm.collectionVariables.set('sroffsetValue', \"10000\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset={{sroffsetValue}}",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "{{sroffsetValue}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.2: sroffset is lower than 0",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response;\r",
+									"const queryParams = pm.request.url.query;\r",
+									"const listValue = pm.collectionVariables.get('listValue');\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"const subParameterList = queryParams.filter(param => param.key.match(/^sr/)).map(param => param.key);\r",
+									"console.log(subParameterList);\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return warnings on sroffset\", () => {\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"\r",
+									"    const sroffsetValue = pm.collectionVariables.get('sroffsetValue');\r",
+									"    pm.expect(response).to.haveOwnProperty('warnings').to.haveOwnProperty('search').to.haveOwnProperty('warnings').to.include(`The value \\\"${sroffsetValue}\\\" for parameter \\\"sroffset\\\" must be no less than 0.`);\r",
+									"})\r",
+									"\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('formatversionValue', \"2\");\r",
+									"pm.collectionVariables.set('sroffsetValue', \"-1\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion={{formatversionValue}}&srsearch={{srsearchValue}}&sroffset={{sroffsetValue}}",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "{{formatversionValue}}"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "{{sroffsetValue}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Output Validation Tests",
+			"item": [
+				{
+					"name": "1.1: action value is invalid Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response, jsonFlag = false; \r",
+									"const actionValue = pm.collectionVariables.get('actionValue');\r",
+									"const queryParams = pm.request.url.query;\r",
+									"console.log(queryParams);\r",
+									"\r",
+									"\r",
+									"\r",
+									"pm.test(\"Response status is 200\", () => {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response is in json\", ()=>{\r",
+									"    pm.response.to.have.header('content-type');\r",
+									"    const headerContentType = pm.response.headers.get('content-type');\r",
+									"    pm.expect(headerContentType).to.include('json');\r",
+									"    response = pm.response.json();\r",
+									"    jsonFlag = true;\r",
+									"\r",
+									"    pm.expect(response).to.be.an('Object');\r",
+									"})\r",
+									"\r",
+									"console.log(response);\r",
+									"\r",
+									"pm.test(\"Batch completed\", () => {\r",
+									"    const formatversionValue = queryParams.find(param => param.key === \"formatversion\")?.value;\r",
+									"    pm.expect(response).to.haveOwnProperty('batchcomplete');\r",
+									"    let batchcompleteValue;\r",
+									"    formatversionValue === \"2\" ? batchcompleteValue = true : batchcompleteValue = \"\";\r",
+									"\r",
+									"    pm.expect(response.batchcomplete).to.eql(batchcompleteValue);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return correct offsec\", () => {\r",
+									"    pm.expect(response).to.haveOwnProperty('continue').to.haveOwnProperty('sroffset').to.be.a('number').to.eql(( pm.collectionVariables.get('sroffsetValue')) + 10);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Response return 10 searched items\", () => {\r",
+									"    pm.expect(response).to.haveOwnProperty('query').to.haveOwnProperty('search'); \r",
+									"    pm.expect(response.query.search).to.be.an(\"array\").that.is.not.empty;\r",
+									"\r",
+									"    pm.expect(response.query.search.length).to.eql(10);\r",
+									"    \r",
+									"})  \r",
+									"\r",
+									"pm.test(\"Searched items have all required fields\", () => {\r",
+									"    \r",
+									"    response.query.search.map(item => {\r",
+									"        pm.expect(item).to.haveOwnProperty('ns');\r",
+									"        \r",
+									"        pm.expect(item).to.haveOwnProperty('title');\r",
+									"        pm.expect(item.title).to.be.a('String');\r",
+									"\r",
+									"        pm.expect(item).to.haveOwnProperty('pageid');\r",
+									"        pm.expect(item.pageid).to.be.a('number');\r",
+									"        pm.expect(item.pageid).to.be.greaterThan(0);\r",
+									"\r",
+									"        pm.expect(item).to.haveOwnProperty('size');\r",
+									"        pm.expect(item.size).to.be.a('number');\r",
+									"        pm.expect(item.size).to.be.greaterThan(0);\r",
+									"\r",
+									"        pm.expect(item).to.haveOwnProperty('wordcount');\r",
+									"        pm.expect(item.wordcount).to.be.a('number');\r",
+									"        pm.expect(item.wordcount).to.be.greaterThan(0);\r",
+									"\r",
+									"        pm.expect(item).to.haveOwnProperty('snippet');\r",
+									"        pm.expect(item.snippet).to.be.a('String');\r",
+									"\r",
+									"        pm.expect(item).to.haveOwnProperty('timestamp');\r",
+									"        const timestamp = new Date(item.timestamp);\r",
+									"        pm.expect(timestamp).to.be.a(\"date\");\r",
+									"    })\r",
+									"    \r",
+									"})\r",
+									"\r",
+									"\r",
+									" "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set('actionValue', \"query\");\r",
+									"pm.collectionVariables.set('listValue', \"search\");\r",
+									"pm.collectionVariables.set('srsearchValue', \"Software Testing\");\r",
+									"pm.collectionVariables.set('sroffsetValue', 10);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseWikiUrl}}?action={{actionValue}}&format=json&list={{listValue}}&continue=-||&formatversion=2&srsearch={{srsearchValue}}&sroffset={{sroffsetValue}}",
+							"host": [
+								"{{baseWikiUrl}}"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "{{actionValue}}"
+								},
+								{
+									"key": "format",
+									"value": "json"
+								},
+								{
+									"key": "list",
+									"value": "{{listValue}}"
+								},
+								{
+									"key": "continue",
+									"value": "-||"
+								},
+								{
+									"key": "formatversion",
+									"value": "2"
+								},
+								{
+									"key": "srsearch",
+									"value": "{{srsearchValue}}"
+								},
+								{
+									"key": "sroffset",
+									"value": "{{sroffsetValue}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Security Tests",
+			"item": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseWikiUrl",
+			"value": "https://en.wikipedia.org/w/api.php",
+			"type": "default"
+		},
+		{
+			"key": "actionValue",
+			"value": "query",
+			"type": "default"
+		},
+		{
+			"key": "listValue",
+			"value": "se@rch",
+			"type": "default"
+		},
+		{
+			"key": "srsearchValue",
+			"value": "Software Testing",
+			"type": "default"
+		},
+		{
+			"key": "formatversionValue",
+			"value": "-25",
+			"type": "default"
+		},
+		{
+			"key": "sroffsetValue",
+			"value": "3921",
+			"type": "default"
+		}
+	]
+}
