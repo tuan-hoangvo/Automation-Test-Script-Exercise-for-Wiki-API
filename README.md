@@ -226,8 +226,8 @@ Below is an explanation of the key query parameters for the API:
         "listValue": "search",
         "continue": "-||",
         "formatversionValue": "2",
-        "srsearchValue": "NonexistentTermThatShouldReturnNoResults12345",
-        "sroffsetValue": 5
+        "srsearchValue": "",
+        "sroffsetValue": ""
     }
 ```
 - **5.2**: Search input exceeds maximum length while offset is valid, verify error message
