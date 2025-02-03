@@ -56,7 +56,12 @@ Below is an explanation of the key query parameters for the API:
 **Pre-condition**: `action` must be `"query"`, `format` must be `"json"`, `list` must be `"search"`, and `srsearch` must be present.  
 - **4.1**: `sroffset` is a string.  
 - **4.2**: `sroffset` is larger than `9999`.  
-- **4.3**: `sroffset` is lower than `0`.  
+- **4.3**: `sroffset` is lower than `0`.
+
+#### 5. Test Cases for Search Input and Offset Combinations
+**Pre-condition**: `action` must be `"query"`, `format` must be `"json"`, `list` must be `"search"`
+- **5.1**: Both search input and offset are blank, verify error message
+- **5.2**: Search input exceeds maximum length while offset is valid, verify error message
 
 ---
 
@@ -64,7 +69,10 @@ Below is an explanation of the key query parameters for the API:
 **Pre-condition**: `format` must be `"json"`.  
 - All query parameters are correct and valid.
 - `sroffset` is greater than remaining number of searched items.
-    For example: If search limit = 10, max search items = 9999. Then if sroffset > 9990, number of items remains should be = max seach items - sroffset.  
+    For example: If search limit = 10, max search items = 9999. Then if sroffset > 9990, number of items remains should be = max seach items - sroffset.
+- Search with case-insensitive input (uppercase/lowercase) and offset < 0, verify search matches are found correctly
+- Search with valid input and offset, verify when no matches are found
+- Search input contains SQL injection with valid offset, verify search match is found 
 ---
 
 ## Notes
