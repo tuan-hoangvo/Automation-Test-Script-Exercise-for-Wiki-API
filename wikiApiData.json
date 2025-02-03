@@ -48,7 +48,7 @@
         "formatversionValue": "2",
         "srsearchValue": "",
         "sroffsetValue": 10
-    }, 
+    },
     {
         "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
         "actionValue": "query",
@@ -64,6 +64,16 @@
         "actionValue": "query",
         "format": "json",
         "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "-20",
+        "srsearchValue": "Software Testing",
+        "sroffsetValue": 10
+    },
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "se@rch",
         "continue": "-||",
         "formatversionValue": "-20",
         "srsearchValue": "Software Testing",
@@ -107,7 +117,7 @@
         "continue": "-||",
         "formatversionValue": "2",
         "srsearchValue": "Software Testing",
-        "sroffsetValue": -1
+        "sroffsetValue": 10000
     },
     {
         "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
@@ -117,7 +127,27 @@
         "continue": "-||",
         "formatversionValue": "2",
         "srsearchValue": "Software Testing",
-        "sroffsetValue": 10000
+        "sroffsetValue": -1
+    },
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "",
+        "sroffsetValue": ""
+    },
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "sroffsetValue": 10
     },
     {
         "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
@@ -128,7 +158,7 @@
         "formatversionValue": "2",
         "srsearchValue": "Software Testing",
         "sroffsetValue": 10
-    }, 
+    },
     {
         "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
         "actionValue": "query",
@@ -138,5 +168,35 @@
         "formatversionValue": "2",
         "srsearchValue": "Software Testing",
         "sroffsetValue": 9995
+    },
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "SOFTWARE TESTING",
+        "sroffsetValue": -1
+    },
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "NonexistentTermThatShouldReturnNoResults12345",
+        "sroffsetValue": 5
+    },
+    {
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "query",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "'; DROP TABLE users; --",
+        "sroffsetValue": 10
     }
 ]
