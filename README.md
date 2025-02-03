@@ -37,16 +37,18 @@ Below is an explanation of the key query parameters for the API:
 - **1.1**: `action` value is invalid.
 
 ```json
-{
-    "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
-    "actionValue": "queri",
-    "format": "json",
-    "listValue": "search",
-    "continue": "-||",
-    "formatversionValue": "2",
-    "srsearchValue": "Software Testing",
-    "sroffsetValue": 10
-}  
+    { 
+        "baseWikiUrl": "https://en.wikipedia.org/w/api.php",
+        "actionValue": "queri",
+        "format": "json",
+        "listValue": "search",
+        "continue": "-||",
+        "formatversionValue": "2",
+        "srsearchValue": "Software Testing",
+        "sroffsetValue": 10
+    }
+``` 
+
 - **1.2**: `action` value is empty.  
 
 > **Note**: If `action` is missing, the API returns the HTML of the API documentation page. No test case was written for this scenario.
